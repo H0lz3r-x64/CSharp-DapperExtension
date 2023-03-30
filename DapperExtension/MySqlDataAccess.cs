@@ -7,23 +7,23 @@ namespace DapperExtension
 {
     public class MySqlDataAccess : ISqlDataAccess
     {
-        private readonly Configuration _config;
-        public MySqlDataAccess(Configuration config)
+        private readonly string _connectionString;
+        public MySqlDataAccess(string connectionString)
         {
-            _config = config;
+            _connectionString = connectionString;
         }
 
         #region Receive
-        public async Task<IEnumerable<T>> LoadDataORM<T, U>(string storedProcedure, U parameters, string connectionId = "Default")
+        public async Task<IEnumerable<T>> LoadDataORM<T, U>(string storedProcedure, U parameters)
         {
-            using IDbConnection connection = new MySqlConnection(_config.ConnectionStrings.ConnectionStrings[connectionId].ConnectionString);
+            using IDbConnection connection = new MySqlConnection(_connectionString);
 
             return await connection.QueryAsync<T>(storedProcedure, parameters, commandType: CommandType.StoredProcedure);
         }
 
-        public async Task<List<IDictionary<string, object>>> LoadData<T, U>(string storedProcedure, U parameters, string connectionId = "Default")
+        public async Task<List<IDictionary<string, object>>> LoadData<T, U>(string storedProcedure, U parameters)
         {
-            using IDbConnection connection = new MySqlConnection(_config.ConnectionStrings.ConnectionStrings[connectionId].ConnectionString);
+            using IDbConnection connection = new MySqlConnection(_connectionString);
 
             IEnumerable<dynamic> results = await connection.QueryAsync(storedProcedure, parameters, commandType: CommandType.StoredProcedure);
             List<IDictionary<string, object>> final = new List<IDictionary<string, object>>();
@@ -36,12 +36,13 @@ namespace DapperExtension
         #endregion
 
         #region Send
-        public async Task SaveData<T>(string storedProcedure, T parameters, string connectionId = "Default")
+        public async Task SaveData<T>(string storedProcedure, T parameters)
         {
-            using IDbConnection connection = new MySqlConnection(_config.ConnectionStrings.ConnectionStrings[connectionId].ConnectionString);
+            using IDbConnection connection = new MySqlConnection(_connectionString);
 
             await connection.ExecuteAsync(storedProcedure, parameters, commandType: CommandType.StoredProcedure);
         }
+
         #endregion
     }
 }
